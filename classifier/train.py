@@ -1,4 +1,5 @@
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,9 +12,13 @@ import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from threading import Thread
-from dogbreeds.classifier.trainlog import TrainLogger
-from dogbreeds.classifier.test import (test_speed, obtain_num_parameters)
+from .trainlog import TrainLogger
+from .test import (test_speed, obtain_num_parameters)
 import shutil
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 class TrainThread(Thread):
     def __init__(self, train_root = 'classifier/data/train/',valid_root = 'classifier/data/val/'
     , sr = True, s = 0.0001, batch_size = 64,epochs = 40, start_epoch = 0

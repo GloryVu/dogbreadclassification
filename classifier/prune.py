@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import numpy as np
 import torch
 import torch.nn as nn
@@ -16,8 +17,8 @@ import argparse
 import torch_pruning as tp
 import shutil
 from threading import Thread
-from dogbreeds.classifier.trainlog import TrainLogger
-from dogbreeds.classifier.test import (test_speed, obtain_num_parameters)
+from .trainlog import TrainLogger
+from .test import (test_speed, obtain_num_parameters)
 import shutil
 class PruneThread(Thread):
     def __init__(self, train_root = 'classifier/data/train/',valid_root = 'classifier/data/val/'
@@ -229,7 +230,7 @@ class PruneThread(Thread):
         bn_modules = get_pruning_modules(model)
         #prec = valid(model,device,test_set)
         for epoch in range(self.start_epoch,self.epochs+1):
-            if(epoch%(int(self.epochs/3/5))==0):
+            if(epoch%(int(self.epochs/15))==0):
                 model,bn_modules = prune(model) 
                 model.to(device)
             train_loss, train_accuracy = train(model,device,train_set,optimizer,epoch,pruning_modules)

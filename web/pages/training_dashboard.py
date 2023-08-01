@@ -7,10 +7,14 @@ import streamlit as st  # 🎈 data web app development
 import torchvision
 import torch
 import os
+import sys
+sys.path.insert(0, os.path.abspath(".."))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import wget
-from dogbreeds.classifier import util
-from dogbreeds.classifier.train import TrainThread
-from dogbreeds.classifier.prune import PruneThread
+from dogbreadclassification.classifier import util
+from dogbreadclassification.classifier.train import TrainThread
+from dogbreadclassification.classifier.prune import PruneThread
 import matplotlib.pyplot as plt
 import threading
 import json
@@ -195,8 +199,7 @@ if st.button('continue train'):
     elif(prune_df.shape[0] < state_dict['epochs']*3):
        
         prune_process = get_prune_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
-            ,default_pretrain=state_dict['default_pretrain'],pretrained_model_path=state_dict['pretrained_model_path'],use_pretrain = state_dict['use_pretrain'],
-            start_epoch=prune_df.shape[0])
+            ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True, start_epoch=prune_df.shape[0])
         prune_process.start()
     else:
         st.wrtie('train is final')
