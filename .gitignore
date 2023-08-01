@@ -1,0 +1,12 @@
+*.mp4
+build
+images/*
+Resnet50-pruning
+classifier/pretrained_models/*
+classifier/data
+classifier/checkpoints/*/pth
+datasets/*
+classifier/models/*
+classifier/checkpoints/*
+classifier/dist
+classifier/torch_pruning.egg-info
