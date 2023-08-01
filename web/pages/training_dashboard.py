@@ -167,9 +167,9 @@ if st.button('train new') or train_df.shape[0] == 0:
 
         prune = st.checkbox('Apply pruning',True)
         if st.button('train'):
-            # st.write('preparing dataset')
-            # util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
-            # st.write('preparing dataset succees.')
+            st.write('preparing dataset')
+            util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
+            st.write('preparing dataset succees.')
             train_process = get_train_process()
             state_dict = {'arch': model_type,
                     'batch_size': batch_size, 
