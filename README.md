@@ -23,7 +23,7 @@
 
 `cd ../`
 # run streamlit app
-`streamlit run web/home.py server.maxUploadSize=2048`
+`streamlit run web/home.py --server.maxUploadSize 2048`
 # upload your dataset in data management streamlit page
 # run test on model test page
 # train model and train progess  in training dashboard page
