@@ -9,7 +9,7 @@
 # active venv
 
 # install requirements
-`cs dogbreadclassification`
+`cd dogbreadclassification`
 
 `source bin/activate`
 
