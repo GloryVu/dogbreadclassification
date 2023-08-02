@@ -48,24 +48,25 @@ default_pretrain=state_dict['default_pretrain']
 pretrained_model_path= state_dict['pretrained_model_path']
 use_pretrain= state_dict['use_pretrain']
 prune=state_dict['prune']
+lr=state_dict['lr']
 
 def get_train_process(arch = model_type,batch_size = batch_size, epochs = epochs
-            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0):
+            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0,lr = 0.001):
     return TrainThread(arch = model_type,batch_size = batch_size, epochs = epochs
             ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,
-            start_epoch=start_epoch)
+            start_epoch=start_epoch,lr=lr)
 
 def get_prune_process(arch = model_type,batch_size = batch_size, epochs = epochs
-            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0):
+            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0,lr =0.001):
     return PruneThread(arch = model_type,batch_size = batch_size, epochs = epochs*3
-            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=start_epoch)
+            ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=start_epoch,lr =lr)
 
 def start_pruning_session(train_process):
     while(train_process.is_alive()):
         time.sleep(5)
     torch.cuda.empty_cache()
-    prune_process = get_prune_process(arch = model_type,batch_size = batch_size, epochs = epochs*3
-            ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True)
+    prune_process = get_prune_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
+            ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True,lr = state_dict['lr'])
     st.write('start pruning session')
     prune_process.start()
 if st.button('train new') or train_df.shape[0] == 0:
@@ -117,6 +118,10 @@ if st.button('train new') or train_df.shape[0] == 0:
             'Num of epochs',
             5, 100, 40, 1)
         st.write('Batch size: ', batch_size)
+        lr = st.slider(
+            'Learing rate',
+            0.001, 0.1, 0.001, 0.001, format='%.3f')
+        st.write('Learning rate: ', lr)
         use_pretrain = st.checkbox('Use pre-trained model',True)
         pretrained_model_path =''
         if use_pretrain:
@@ -170,14 +175,15 @@ if st.button('train new') or train_df.shape[0] == 0:
             # st.write('preparing dataset')
             # util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
             # st.write('preparing dataset succees.')
-            train_process = get_train_process()
+            train_process = get_train_process(lr=lr)
             state_dict = {'arch': model_type,
                     'batch_size': batch_size, 
                     'epochs':epochs ,
                     'default_pretrain': default_pretrain,
                     'pretrained_model_path':pretrained_model_path,
                     'use_pretrain': use_pretrain,
-                    'prune': prune}
+                    'prune': prune,
+                    'lr': lr}
             with open("classifier/state.json", "w") as outfile:
                 json.dump(state_dict, outfile)
             st.write('Start training session.')
@@ -193,13 +199,13 @@ if st.button('continue train'):
     if(train_df.shape[0] < state_dict['epochs']):
         train_process = get_train_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
             ,default_pretrain=state_dict['default_pretrain'],pretrained_model_path=state_dict['pretrained_model_path'],use_pretrain = state_dict['use_pretrain'],
-            start_epoch=train_df.shape[0])
+            start_epoch=train_df.shape[0],lr = state_dict['lr'])
         train_process.start()
         threading.Thread(target=start_pruning_session, args=(train_process,)).start()
     elif(prune_df.shape[0] < state_dict['epochs']*3):
        
         prune_process = get_prune_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
-            ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True, start_epoch=prune_df.shape[0])
+            ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True, start_epoch=prune_df.shape[0],lr = state_dict['lr'])
         prune_process.start()
     else:
         st.wrtie('train is final')
