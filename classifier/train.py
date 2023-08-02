@@ -16,8 +16,7 @@ from .trainlog import TrainLogger
 from .test import (test_speed, obtain_num_parameters)
 import shutil
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 
 class TrainThread(Thread):
     def __init__(self, train_root = 'classifier/data/train/',valid_root = 'classifier/data/val/'
@@ -53,7 +52,7 @@ class TrainThread(Thread):
             os.makedirs(self.save)
 
         train_transform = transforms.Compose([
-            transforms.Resize(224),
+            transforms.Resize((224,224)),
             transforms.RandomResizedCrop(224,scale=(0.6,1.0),ratio=(0.8,1.0)),
             transforms.RandomHorizontalFlip(),
             torchvision.transforms.ColorJitter(brightness=0.5, contrast=0, saturation=0, hue=0),
@@ -69,8 +68,8 @@ class TrainThread(Thread):
         ])
 
         test_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.RandomResizedCrop(224,scale=(1.0,1.0),ratio=(1.0,1.0)),
+            transforms.Resize((224,224)),
+            # transforms.RandomResizedCrop(224,scale=(1.0,1.0),ratio=(1.0,1.0)),
             # transforms.RandomResizedCrop(224,scale=(0.6,1.0),ratio=(0.8,1.0)),
             # transforms.RandomHorizontalFlip(),
             # torchvision.transforms.ColorJitter(brightness=0.5, contrast=0, saturation=0, hue=0),
@@ -88,19 +87,25 @@ class TrainThread(Thread):
                 root=self.valid_root,
                 transform=test_transform
             )
-
+        def collate_fn(batch):
+            return {
+                'pixel_values': torch.stack([x['pixel_values'] for x in batch]),
+                'labels': torch.tensor([x['labels'] for x in batch])
+            }
         train_set = torch.utils.data.DataLoader(
             train_data,
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=2
+            num_workers=2,
+            # collate_fn=collate_fn
         )
 
         test_set = torch.utils.data.DataLoader(
             valid_data,
             batch_size=self.batch_size,
             shuffle=False,
-            num_workers=2
+            num_workers=2,
+            # collate_fn=collate_fn
         )
 
         def updateBN(model, s ,pruning_modules):
@@ -154,6 +159,7 @@ class TrainThread(Thread):
         model.fc = nn.Sequential(
                 nn.Linear(model.fc.in_features,512),
                 nn.ReLU(),
+                nn.Dropout(0.2),
                 nn.Linear(512,num_classes),
             )
         model.to(device)

@@ -38,7 +38,7 @@ f= open("classifier/state.json")
 state_dict = json.load(f)
 prune_df = get_data(('classifier/checkpoints/prune_log_1.csv'))
 train_df = get_data('classifier/checkpoints/train_log_1.csv')
-inputplaceholder = st.empty()
+
 st.write('lastest state')
 st.write(state_dict)
 model_type =state_dict['arch']
@@ -49,7 +49,7 @@ pretrained_model_path= state_dict['pretrained_model_path']
 use_pretrain= state_dict['use_pretrain']
 prune=state_dict['prune']
 lr=state_dict['lr']
-
+inputplaceholder = st.empty()
 def get_train_process(arch = model_type,batch_size = batch_size, epochs = epochs
             ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0,lr = 0.001):
     return TrainThread(arch = model_type,batch_size = batch_size, epochs = epochs
@@ -172,9 +172,9 @@ if st.button('train new') or train_df.shape[0] == 0:
 
         prune = st.checkbox('Apply pruning',True)
         if st.button('train'):
-            st.write('preparing dataset')
-            util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
-            st.write('preparing dataset succees.')
+            # st.write('preparing dataset')
+            # util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
+            # st.write('preparing dataset succees.')
             train_process = get_train_process(lr=lr)
             state_dict = {'arch': model_type,
                     'batch_size': batch_size, 

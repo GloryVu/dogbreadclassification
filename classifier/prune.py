@@ -55,7 +55,7 @@ class PruneThread(Thread):
             os.makedirs(self.save)
 
         train_transform = transforms.Compose([
-            transforms.Resize(224),
+            transforms.Resize((224,224)),
             transforms.RandomResizedCrop(224,scale=(0.6,1.0),ratio=(0.8,1.0)),
             transforms.RandomHorizontalFlip(),
             torchvision.transforms.ColorJitter(brightness=0.5, contrast=0, saturation=0, hue=0),
@@ -71,8 +71,8 @@ class PruneThread(Thread):
         ])
 
         test_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.RandomResizedCrop(224,scale=(1.0,1.0),ratio=(1.0,1.0)),
+            transforms.Resize((224,224)),
+            # transforms.RandomResizedCrop(224,scale=(1.0,1.0),ratio=(1.0,1.0)),
             # transforms.RandomHorizontalFlip(),
             # torchvision.transforms.ColorJitter(brightness=0.5, contrast=0, saturation=0, hue=0),
             # torchvision.transforms.ColorJitter(brightness=0, contrast=0.5, saturation=0, hue=0),
@@ -87,21 +87,29 @@ class PruneThread(Thread):
 
         valid_data = torchvision.datasets.ImageFolder(
                 root=self.valid_root,
-                transform=train_transform
+                transform=test_transform
             )
 
+        # def collate_fn(batch):
+        #     return {
+        #         'pixel_values': torch.stack([x['pixel_values'] for x in batch]),
+        #         'labels': torch.tensor([x['labels'] for x in batch])
+        #     }
         train_set = torch.utils.data.DataLoader(
             train_data,
             batch_size=self.batch_size,
-            shuffle=True
+            shuffle=True,
+            num_workers=2,
+            # collate_fn=collate_fn
         )
 
         test_set = torch.utils.data.DataLoader(
             valid_data,
             batch_size=self.batch_size,
-            shuffle=False
+            shuffle=False,
+            num_workers=2,
+            # collate_fn=collate_fn
         )
-
         def updateBN(model, s ,pruning_modules):
             for module in pruning_modules:
                 module.weight.grad.data.add_(s * torch.sign(module.weight.data))
@@ -195,7 +203,8 @@ class PruneThread(Thread):
         model = resnet(pretrained=self.use_pretrain)
         num_classes = len(os.listdir(self.train_root))
         model.fc = nn.Sequential(nn.Linear(model.fc.in_features,512),
-                                 nn.ReLU(),
+                                nn.ReLU(),
+                                nn.Dropout(0.2),
                                 nn.Linear(512,num_classes),)
         if not self.default_pretrain:
             model.load_state_dict(torch.load(self.pretrained_model_path))
@@ -236,7 +245,7 @@ class PruneThread(Thread):
         bn_modules = get_pruning_modules(model)
         #prec = valid(model,device,test_set)
         for epoch in range(self.start_epoch,self.epochs+1):
-            if(epoch%(int(self.epochs/15))==0):
+            if(epoch%(int(self.epochs/3/5))==0):
                 model,bn_modules = prune(model) 
                 model.to(device)
             train_loss, train_accuracy = train(model,device,train_set,optimizer,epoch,pruning_modules)
