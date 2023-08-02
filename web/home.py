@@ -6,7 +6,7 @@ st.write('Dogbreeds Classification Training Solutions')
 
 st.write('')
 st.write('News!')
-st.write('All modules is likely to working well. I\'m try to build instruction Thanks')
+st.write('All modules is likely to working well.')
 st.write('I\'m training other type model.')
 st.write('if you wanna test, please test at your machine. intructions to implement was completed at https://github.com/GloryVu/dogbreadclassification')
 st.write('')
