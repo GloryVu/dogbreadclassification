@@ -1,24 +1,24 @@
 *.mp4
 build
-images/*
+# images/*
 Resnet50-pruning
 classifier/pretrained_models/*
 classifier/data
-classifier/checkpoints/*/pth
-datasets/*
-classifier/models/*
-classifier/checkpoints/*
+# classifier/checkpoints/*/pth
+# datasets/*
+# classifier/models/*
+# classifier/checkpoints/*
 classifier/dist
 classifier/torch_pruning.egg-info
 *.mp4
-images/*
+# images/*
 Resnet50-pruning
 classifier/pretrained_models/*
 classifier/data
-classifier/checkpoints/*/pth
-datasets/*
-classifier/model/*
-classifier/checkpoints/*
+# classifier/checkpoints/*/pth
+# datasets/*
+# classifier/model/*
+# classifier/checkpoints/*
 include
 lib
 lib64
@@ -27,3 +27,7 @@ dist
 bin
 buid
 etc
+dogbreadclassification.egg-info
+torch_pruning.egg-info
+pyvenv.cfg
+.vscode

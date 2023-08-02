@@ -16,7 +16,6 @@ import torchvision
 from albumentations.pytorch import ToTensorV2
 from PIL import Image
 
-
 if torch.cuda.is_available():
     device = torch.device('cuda:0')
 else:
@@ -44,7 +43,6 @@ except Exception:
         )
     model.load_state_dict(torch.load('classifier/models/trained_model_18.pth',map_location=device))
     st.write('You need to train successfully one model first')
-    
 
 # Preprocess function
 def preprocess(image):
@@ -59,18 +57,22 @@ def preprocess(image):
 
 # Define the sample images
 sample_images = {
-    "Chihuahua": "images/n02085620-Chihuahua/n02085620_275.jpg",
-    "Jpanse_spaniel": "images/n02085782-Japanese_spaniel/n02085782_17.jpg",
+    "Chihuahua": "images/n02085620-Chihuahua/n02085620_326.jpg",
+    "Jpanse_spaniel": "images/n02085782-Japanese_spaniel/n02085782_80.jpg",
+    "Norwich_terrier": "images/n02094258-Norwich_terrier/n02094258_81.jpg",
+    "bull_mastiff": "images/n02113978-Mexican_hairless/n02113978_147.jpg",
+    "Great_Pyrenees": "images/n02111500-Great_Pyrenees/n02111500_149.jpg",
 }
 
 # Define the function to make predictions on an image
 def predict(image):
     # try:
         image = preprocess(image).unsqueeze(0)
-        image.to(device)
+
         # Prediction
         # Make a prediction on the image
         with torch.no_grad():
+            image = image.to(device)
             output = model(image)
             # convert to probabilities
             probabilities = torch.nn.functional.softmax(output[0])

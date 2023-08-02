@@ -7,14 +7,10 @@ import streamlit as st  # 🎈 data web app development
 import torchvision
 import torch
 import os
-import sys
-sys.path.insert(0, os.path.abspath(".."))
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import wget
-from dogbreadclassification.classifier import util
-from dogbreadclassification.classifier.train import TrainThread
-from dogbreadclassification.classifier.prune import PruneThread
+from dogbreeds.classifier import util
+from dogbreeds.classifier.train import TrainThread
+from dogbreeds.classifier.prune import PruneThread
 import matplotlib.pyplot as plt
 import threading
 import json
@@ -167,9 +163,9 @@ if st.button('train new') or train_df.shape[0] == 0:
 
         prune = st.checkbox('Apply pruning',True)
         if st.button('train'):
-            st.write('preparing dataset')
-            util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
-            st.write('preparing dataset succees.')
+            # st.write('preparing dataset')
+            # util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
+            # st.write('preparing dataset succees.')
             train_process = get_train_process()
             state_dict = {'arch': model_type,
                     'batch_size': batch_size, 
@@ -227,6 +223,7 @@ while True:
             # fig_col1, fig_col2 = st.columns(2)
             # with fig_col1:
             fig, ax = plt.subplots()
+            ax.set_xlabel('epoch')
             ax.set_ylim(0.0,2.0)
             ax.plot(train_df['epoch'], train_df['train_loss'], label = "train loss")
             ax.plot(train_df['epoch'], train_df['val_loss'], label = "validation loss",linestyle='--')
@@ -243,6 +240,7 @@ while True:
         if prune and prune_df.shape[0]!=0:
             prune_df = prune_df.sort_values(by=['epoch'])
             fig, ax = plt.subplots()
+            ax.set_xlabel('epoch')
             ax.set_ylim(0.0,2.0)
             ax.plot(prune_df['epoch'], prune_df['train_loss'], label = "train loss")
             ax.plot(prune_df['epoch'], prune_df['val_loss'], label = "validation loss",linestyle='--')
@@ -254,6 +252,8 @@ while True:
             prune_df['mode_size'] = prune_df['mode_size']/prune_df['mode_size'].max()
             prune_df['infer_time'] = prune_df['infer_time']/prune_df['infer_time'].max()
             fig, ax = plt.subplots()
+            
+            ax.set_xlabel('epoch')
             ax.set_ylim(0.0,1.0)
             bins = [i for i in range(prune_df.shape[0])]
             ax.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
@@ -262,6 +262,7 @@ while True:
             st.markdown("### Reduce parameters size Chart")
             st.pyplot(fig)
             fig2, ax2 = plt.subplots()
+            ax2.set_xlabel('epoch')
             ax2.set_ylim(0.0,1.0)
             ax2.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
             ax2.bar(bins,prune_df['infer_time'],1.0,label='inference time',color='lightgrey')
@@ -271,5 +272,6 @@ while True:
             st.markdown("### Prune Data View")
             st.dataframe(prune_df)
             # st.write(prune_df.shape[0])
+            # plt.close()
     time.sleep(10)
     plt.close()
