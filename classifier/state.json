@@ -1,1 +1,1 @@
-{"arch": "resnet50", "batch_size": 64, "epochs": 5, "default_pretrain": "Yes", "pretrained_model_path": "", "use_pretrain": true, "prune": true, "lr":0.001}
+{"arch": "resnet18", "batch_size": 16, "epochs": 5, "default_pretrain": "Yes", "pretrained_model_path": "", "use_pretrain": true, "prune": true, "lr": 0.001}
