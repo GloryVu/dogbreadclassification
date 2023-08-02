@@ -208,7 +208,7 @@ if st.button('continue train'):
             ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True, start_epoch=prune_df.shape[0],lr = state_dict['lr'])
         prune_process.start()
     else:
-        st.wrtie('train is final')
+        st.write('train is final')
 # creating a single-element container
 st.write('Training Process')
 st.write(time.strftime("%H:%M:%S", time.localtime()))
