@@ -60,13 +60,13 @@ class PruneThread(Thread):
             transforms.RandomHorizontalFlip(),
             torchvision.transforms.ColorJitter(brightness=0.5, contrast=0, saturation=0, hue=0),
             torchvision.transforms.ColorJitter(brightness=0, contrast=0.5, saturation=0, hue=0),
-            torchvision.transforms.ColorJitter(brightness=0, contrast=0, saturation=0.4, hue=0.1),
-            transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.8, 1.2)),  # Random affine transformation
-            transforms.RandomPerspective(distortion_scale=0.5, p=0.5),  # Random perspective transformation
+            torchvision.transforms.ColorJitter(brightness=0, contrast=0, saturation=0.2, hue=0.05),
+            transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),  # Random affine transformation
+            transforms.RandomPerspective(distortion_scale=0.5, p=0.1),  # Random perspective transformation
             # transforms.RandomApply([transforms.functional.solarize], p=0.3, thresholds=(128, 192)),
-            transforms.RandomApply([transforms.GaussianBlur(kernel_size=5)], p=0.3),
+            transforms.RandomApply([transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5))], p=0.1),
             transforms.ToTensor(),
-            transforms.RandomErasing(p=0.5, scale=(0.02, 0.2), ratio=(0.3, 3.3), value=0),  # Random erasing
+            transforms.RandomErasing(p=0.3, scale=(0.02, 0.2), ratio=(0.3, 3.3), value=0),  # Random erasing
             transforms.Normalize(mean=[.5, .5, .5], std=[.5, .5, .5])
         ])
 
@@ -202,10 +202,10 @@ class PruneThread(Thread):
         resnet = getattr(torchvision.models, self.arch)
         model = resnet(pretrained=self.use_pretrain)
         num_classes = len(os.listdir(self.train_root))
-        model.fc = nn.Sequential(nn.Linear(model.fc.in_features,512),
-                                nn.ReLU(),
-                                nn.Dropout(0.2),
-                                nn.Linear(512,num_classes),)
+        model.fc = nn.Sequential(nn.Linear(model.fc.in_features,num_classes),)
+                                # nn.ReLU(),
+                                # nn.Dropout(0.2),
+                                # nn.Linear(512,num_classes),)
         if not self.default_pretrain:
             model.load_state_dict(torch.load(self.pretrained_model_path))
         
