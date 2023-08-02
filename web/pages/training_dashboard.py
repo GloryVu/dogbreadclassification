@@ -29,18 +29,16 @@ def get_data(path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-
+interactholder = st.empty()
 # dashboard title
 st.title("Real-Time Training Dashboard")
+with interactholder:
+    col1, col2, col3 = st.columns(3)
 
-f= open("classifier/state.json")
-   
+f= open("classifier/state.json")   
 state_dict = json.load(f)
 prune_df = get_data(('classifier/checkpoints/prune_log_1.csv'))
 train_df = get_data('classifier/checkpoints/train_log_1.csv')
-
-st.write('lastest state')
-st.write(state_dict)
 model_type =state_dict['arch']
 batch_size=state_dict['batch_size']
 epochs = state_dict['epochs']
@@ -49,7 +47,15 @@ pretrained_model_path= state_dict['pretrained_model_path']
 use_pretrain= state_dict['use_pretrain']
 prune=state_dict['prune']
 lr=state_dict['lr']
-inputplaceholder = st.empty()
+with col3:
+    st.write('lastest state')
+    st.write(state_dict)
+
+with col1:
+    trainnew_bt = st.button('train new')
+    continue_bt = st.button('continue train')
+with col2:    
+    inputplaceholder = st.empty()
 def get_train_process(arch = model_type,batch_size = batch_size, epochs = epochs
             ,default_pretrain=default_pretrain,pretrained_model_path=pretrained_model_path,use_pretrain = use_pretrain,start_epoch=0,lr = 0.001):
     return TrainThread(arch = model_type,batch_size = batch_size, epochs = epochs
@@ -67,9 +73,10 @@ def start_pruning_session(train_process):
     torch.cuda.empty_cache()
     prune_process = get_prune_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
             ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True,lr = state_dict['lr'])
-    st.write('start pruning session')
+    with col1:
+        st.write('start pruning session')
     prune_process.start()
-if st.button('train new') or train_df.shape[0] == 0:
+if trainnew_bt or train_df.shape[0] == 0:
 
     with inputplaceholder.container():
         st.write('Repare Dataset')
@@ -172,9 +179,14 @@ if st.button('train new') or train_df.shape[0] == 0:
 
         prune = st.checkbox('Apply pruning',True)
         if st.button('train'):
-            st.write('preparing dataset')
+            
+            # with col1:
+            #     st.write('preparing dataset')
+            st.info('Preparing dataset', icon="ℹ️")
             util.reorg_dog_data('images/',val_ratio/100,(100.0-train_ratio-val_ratio)/100)
-            st.write('preparing dataset succees.')
+            # with col1:
+            #     st.write('finish preparing dataset.')
+            st.info('Finish preparing dataset.', icon="ℹ️")
             train_process = get_train_process(lr=lr)
             state_dict = {'arch': model_type,
                     'batch_size': batch_size, 
@@ -186,8 +198,10 @@ if st.button('train new') or train_df.shape[0] == 0:
                     'lr': lr}
             with open("classifier/state.json", "w") as outfile:
                 json.dump(state_dict, outfile)
-            st.write('Start training session.')
-
+            # with col1:
+            #     st.write('Start training session.')
+            st.info('Start training session.', icon="ℹ️")
+            interactholder.empty()
             train_process.start()
 
             threading.Thread(target=start_pruning_session, args=(train_process,)).start()
@@ -195,23 +209,28 @@ if st.button('train new') or train_df.shape[0] == 0:
 # @st.cache_data
 
 
-if st.button('continue train'):
+if continue_bt:
     if(train_df.shape[0] < state_dict['epochs']):
         train_process = get_train_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
             ,default_pretrain=state_dict['default_pretrain'],pretrained_model_path=state_dict['pretrained_model_path'],use_pretrain = state_dict['use_pretrain'],
             start_epoch=train_df.shape[0],lr = state_dict['lr'])
+        st.info(f'Continue train from epoch {train_df.shape[0]}.', icon="ℹ️")
+        interactholder.empty()
         train_process.start()
         threading.Thread(target=start_pruning_session, args=(train_process,)).start()
     elif(prune_df.shape[0] < state_dict['epochs']*3):
-       
+        
         prune_process = get_prune_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
             ,default_pretrain=False,pretrained_model_path='classifier/models/trained_model.pth',use_pretrain = True, start_epoch=prune_df.shape[0],lr = state_dict['lr'])
+        st.info(f'Continue prune from epoch {prune_df.shape[0]}.', icon="ℹ️")
+        interactholder.empty()
         prune_process.start()
     else:
-        st.write('train is final')
+        # with col1:
+        #     st.write('train is final')
+        st.warn('Previous training session is done.', icon="⚠️")
 # creating a single-element container
-st.write('Training Process')
-st.write(time.strftime("%H:%M:%S", time.localtime()))
+
 placeholder = st.empty()
 
 # near real-time / live feed simulation
@@ -219,7 +238,10 @@ placeholder = st.empty()
 while True:
     train_df = get_data('classifier/checkpoints/train_log_1.csv')
     prune_df = get_data(('classifier/checkpoints/prune_log_1.csv'))
+    # if( )
     with placeholder.container():
+        st.write('Training Process')
+        st.write(time.strftime("%H:%M:%S", time.localtime()))
         if train_df.shape[0]!=0:
             train_df = train_df.sort_values(by=['epoch'])
     #    ,epoch,train_accuracy,val_accuracy,train_loss,val_loss,mode_size,infer_time
@@ -246,7 +268,8 @@ while True:
 
             st.markdown("### Train Data View")
             st.dataframe(train_df)
-            
+        else:
+            st.write('please wait, progress will be plot below after finish 1 epoch')
         if prune and prune_df.shape[0]!=0:
             prune_df = prune_df.sort_values(by=['epoch'])
             fig, ax = plt.subplots()

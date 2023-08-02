@@ -40,6 +40,7 @@ class TrainThread(Thread):
         self.pretrained_model_path = pretrained_model_path
         self.use_pretrain = use_pretrain
         self.trainlogger = TrainLogger(create =(start_epoch==0),csv_path = 'classifier/checkpoints/train_log_1.csv')
+        TrainLogger(create =True,csv_path = 'classifier/checkpoints/prune_log_1.csv')
     def train_process(self):
 
         if torch.cuda.is_available():
