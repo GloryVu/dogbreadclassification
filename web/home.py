@@ -76,6 +76,7 @@ while True:
             prune_df['mode_size'] = prune_df['mode_size']/prune_df['mode_size'].max()
             prune_df['infer_time'] = prune_df['infer_time']/prune_df['infer_time'].max()
             fig, ax = plt.subplots()
+            ax.set_xlabel('epoch')
             ax.set_ylim(0.0,1.0)
             bins = [i+1 for i in range(prune_df.shape[0])]
             ax.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
@@ -118,7 +119,7 @@ while True:
             st.markdown("### Reduce parameters size Chart")
             st.pyplot(fig)
             fig2, ax2 = plt.subplots()
-            ax.set_xlabel('epoch')
+            ax2.set_xlabel('epoch')
             ax2.set_ylim(0.0,1.0)
             ax2.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
             ax2.bar(bins,prune_df['infer_time'],1.0,label='inference time',color='lightgrey')
