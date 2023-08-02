@@ -7,10 +7,14 @@ import streamlit as st  # 🎈 data web app development
 import torchvision
 import torch
 import os
+import sys
+sys.path.insert(0, os.path.abspath(".."))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import wget
-from dogbreeds.classifier import util
-from dogbreeds.classifier.train import TrainThread
-from dogbreeds.classifier.prune import PruneThread
+from dogbreadclassification.classifier import util
+from dogbreadclassification.classifier.train import TrainThread
+from dogbreadclassification.classifier.prune import PruneThread
 import matplotlib.pyplot as plt
 import threading
 import json
