@@ -18,7 +18,7 @@ from dogbreadclassification.classifier.prune import PruneThread
 import matplotlib.pyplot as plt
 import threading
 import json
-# from dogbreeds.util import reorg_dog_data
+## from dogbreeds.util import reorg_dog_data
 st.set_page_config(
     page_title="Real-Time Data Science Dashboard",
     page_icon="✅",
@@ -28,10 +28,18 @@ st.set_page_config(
 def get_data(path) -> pd.DataFrame:
     return pd.read_csv(path)
 
-
+st.title("Real-Time Training Dashboard")
+st.write('I\'m training other model types.')
+st.write('if you wanna test, please test at your machine. Intructions to implement was completed at https://github.com/GloryVu/dogbreadclassification')
+st.write('Wanna test training on my server. contact me via:')
+st.write('Phone: 0886621947')
+st.write('facebook: https://www.facebook.com/vu.vinh.33865854')
+st.write('email: vuvinh0246@gmail.com')
+st.write('linkedin: https://www.linkedin.com/in/vinhvu0246/')
 interactholder = st.empty()
 # dashboard title
-st.title("Real-Time Training Dashboard")
+
+
 with interactholder:
     col1, col2, col3 = st.columns(3)
 
@@ -47,6 +55,7 @@ pretrained_model_path= state_dict['pretrained_model_path']
 use_pretrain= state_dict['use_pretrain']
 prune=state_dict['prune']
 lr=state_dict['lr']
+# is_training = state_dict['is_training']
 with col3:
     st.write('lastest state')
     st.write(state_dict)
@@ -124,7 +133,7 @@ if trainnew_bt or train_df.shape[0] == 0:
         epochs = st.slider(
             'Num of epochs',
             5, 100, 40, 1)
-        st.write('Batch size: ', batch_size)
+        st.write('Batch size: ', epochs)
         lr = st.slider(
             'Learing rate',
             0.001, 0.1, 0.001, 0.001, format='%.3f')
@@ -187,15 +196,18 @@ if trainnew_bt or train_df.shape[0] == 0:
             # with col1:
             #     st.write('finish preparing dataset.')
             st.info('Finish preparing dataset.', icon="ℹ️")
-            train_process = get_train_process(lr=lr)
             state_dict = {'arch': model_type,
-                    'batch_size': batch_size, 
-                    'epochs':epochs ,
-                    'default_pretrain': default_pretrain,
-                    'pretrained_model_path':pretrained_model_path,
-                    'use_pretrain': use_pretrain,
-                    'prune': prune,
-                    'lr': lr}
+                'batch_size': batch_size, 
+                'epochs':epochs ,
+                'default_pretrain': default_pretrain,
+                'pretrained_model_path':pretrained_model_path,
+                'use_pretrain': use_pretrain,
+                'prune': prune,
+                'lr': lr}
+            train_process = get_train_process(arch = state_dict['arch'],batch_size = state_dict['batch_size'], epochs = state_dict['epochs']
+            ,default_pretrain=state_dict['default_pretrain'],pretrained_model_path=state_dict['pretrained_model_path'],use_pretrain = state_dict['use_pretrain'],
+            start_epoch=0,lr = state_dict['lr'])
+
             with open("classifier/state.json", "w") as outfile:
                 json.dump(state_dict, outfile)
             # with col1:
@@ -230,7 +242,8 @@ if continue_bt:
         #     st.write('train is final')
         st.warn('Previous training session is done.', icon="⚠️")
 # creating a single-element container
-
+# if is_training:
+#     interactholder.empty()
 placeholder = st.empty()
 
 # near real-time / live feed simulation
@@ -240,7 +253,7 @@ while True:
     prune_df = get_data(('classifier/checkpoints/prune_log_1.csv'))
     # if( )
     with placeholder.container():
-        st.write('Training Process')
+        st.title('Training Process')
         st.write(time.strftime("%H:%M:%S", time.localtime()))
         if train_df.shape[0]!=0:
             train_df = train_df.sort_values(by=['epoch'])
@@ -269,7 +282,7 @@ while True:
             st.markdown("### Train Data View")
             st.dataframe(train_df)
         else:
-            st.write('please wait, progress will be plot below after finish 1 epoch')
+            st.write('please wait, progress will be plot below after epoch 1 finish')
         if prune and prune_df.shape[0]!=0:
             prune_df = prune_df.sort_values(by=['epoch'])
             fig, ax = plt.subplots()
@@ -282,15 +295,15 @@ while True:
             ax.legend(loc='best')
             st.markdown("### Prune Chart")
             st.pyplot(fig)
-            prune_df['mode_size'] = prune_df['mode_size']/prune_df['mode_size'].max()
-            prune_df['infer_time'] = prune_df['infer_time']/prune_df['infer_time'].max()
+            prune_df['mode_size'] = prune_df['mode_size']/train_df['mode_size'].max()
+            prune_df['infer_time'] = prune_df['infer_time']/train_df['infer_time'].max()
             fig, ax = plt.subplots()
             
             ax.set_xlabel('epoch')
             ax.set_ylim(0.0,1.0)
             bins = [i for i in range(prune_df.shape[0])]
             ax.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
-            ax.bar(bins,prune_df['mode_size'],1.0,label='model size',color='moccasin')
+            ax.bar(bins,prune_df['mode_size'],1.0,label='model size %',color='moccasin')
             ax.legend(loc='best')
             st.markdown("### Reduce parameters size Chart")
             st.pyplot(fig)
@@ -298,7 +311,7 @@ while True:
             ax2.set_xlabel('epoch')
             ax2.set_ylim(0.0,1.0)
             ax2.plot(prune_df['epoch'], prune_df['val_accuracy'], label = "validation acc",linestyle='-.')
-            ax2.bar(bins,prune_df['infer_time'],1.0,label='inference time',color='lightgrey')
+            ax2.bar(bins,prune_df['infer_time'],1.0,label='inference time %',color='lightgrey')
             ax2.legend(loc='best')
             st.markdown("### Reduce latency Chart")
             st.pyplot(fig2)
