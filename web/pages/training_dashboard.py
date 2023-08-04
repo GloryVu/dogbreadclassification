@@ -29,13 +29,13 @@ def get_data(path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 st.title("Real-Time Training Dashboard")
-st.write('I\'m training other model types.')
-st.write('if you wanna test, please test at your machine. Intructions to implement was completed at https://github.com/GloryVu/dogbreadclassification')
-st.write('Wanna test training on my server. contact me via:')
-st.write('Phone: 0886621947')
-st.write('facebook: https://www.facebook.com/vu.vinh.33865854')
-st.write('email: vuvinh0246@gmail.com')
-st.write('linkedin: https://www.linkedin.com/in/vinhvu0246/')
+# st.write('I\'m training other model types.')
+# st.write('if you wanna test, please test at your machine. Intructions to implement was completed at https://github.com/GloryVu/dogbreadclassification')
+# st.write('Wanna test training on my server. contact me via:')
+# st.write('Phone: 0886621947')
+# st.write('facebook: https://www.facebook.com/vu.vinh.33865854')
+# st.write('email: vuvinh0246@gmail.com')
+# st.write('linkedin: https://www.linkedin.com/in/vinhvu0246/')
 interactholder = st.empty()
 # dashboard title
 
